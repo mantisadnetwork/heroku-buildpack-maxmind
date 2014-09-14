@@ -1,31 +1,31 @@
 #!/usr/bin/env bash
 
-BUILD_DIR = $1
-CACHE_DIR = $2
-ENV_DIR = $3
+BUILD_DIR=$1
+CACHE_DIR=$2
+ENV_DIR=$3
 
-if [ ! -f "$ENV_DIR/MAXMIND_KEY" ]
+if [ ! -f "$ENV_DIR/MAXMIND_KEY" ]; then
 	echo "-----> You must define the environment variable MAXMIND_KEY with your license key."
 
 	exit 1
 fi
 
-if [ ! -f "$ENV_DIR/MAXMIND_PATH" ]
+if [ ! -f "$ENV_DIR/MAXMIND_PATH" ]; then
 	echo "-----> You must define the environment variable MAXMIND_PATH with the path relative to the build directory where you would like to store the file."
 
 	exit 1
 fi
 
 
-MAXMIND_PATH = `cat $ENV_DIR/MAXMIND_PATH`
-MAXMIND_KEY = `cat $ENV_DIR/MAXMIND_KEY`
+MAXMIND_PATH=`cat $ENV_DIR/MAXMIND_PATH`
+MAXMIND_KEY=`cat $ENV_DIR/MAXMIND_KEY`
 
-DB = "$CACHE_DIR/GeoIP2-ISP.mmdb"
+DB="$CACHE_DIR/GeoIP2-ISP.mmdb"
 
-if [ ! -f $DB ]
+if [ ! -f $DB ]; then
 	echo "-----> Database does not exist in cache, downloading."
 
-	TAR = "$CACHE_DIR/isp.tar.gz"
+	TAR="$CACHE_DIR/isp.tar.gz"
 
 	curl -o $TAR -L "https://download.maxmind.com/app/geoip_download?edition_id=GeoIP2-ISP&suffix=tar.gz&license_key=$MAXMIND_KEY"
 
@@ -35,7 +35,7 @@ if [ ! -f $DB ]
 	rm $TAR
 fi
 
-SAVE = "$BUILD_DIR/$SAVE"
+SAVE="$BUILD_DIR/$SAVE"
 
 echo "-----> Copying $DB to $SAVE"
 
