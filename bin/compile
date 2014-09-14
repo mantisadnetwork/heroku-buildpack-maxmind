@@ -24,6 +24,10 @@ MAXMIND_KEY=`cat $ENV_DIR/MAXMIND_KEY`
 
 TAR="$CACHE_DIR/isp.tar.gz"
 DB="$CACHE_DIR/GeoIP2-ISP.mmdb"
+LAST="$CACHE_DIR/lastdb"
+
+touch --help
+exit 1
 
 if [ ! -f $DB ]; then
 	if [ ! -f $TAR ]; then
