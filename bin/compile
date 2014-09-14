@@ -26,8 +26,21 @@ TAR="$CACHE_DIR/isp.tar.gz"
 DB="$CACHE_DIR/GeoIP2-ISP.mmdb"
 LAST="$CACHE_DIR/lastdb"
 
-touch --help
-exit 1
+if [ -f $DB ]; then
+	if [ -f $LAST ]; then
+		touch -d '-1 week' limit
+
+		if [ limit -nt $LAST ];
+			echo "-----> Database is older than a week, clearing cache."
+
+			rm $DB
+		fi
+	else
+		echo "-----> Unable to determine last download time, clearing cache."
+
+		rm $DB
+	fi
+fi
 
 if [ ! -f $DB ]; then
 	if [ ! -f $TAR ]; then
@@ -39,6 +52,8 @@ if [ ! -f $DB ]; then
 	echo "-----> Extracting $TAR"
 
 	tar -zxvf $TAR -C $CACHE_DIR --no-anchored --strip-components=1 'GeoIP2-ISP.mmdb'
+
+	touch $LAST
 else
 	echo "-----> Database already exists in cache."
 fi
