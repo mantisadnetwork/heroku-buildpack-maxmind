@@ -25,6 +25,10 @@ MAXMIND_KEY=`cat $ENV_DIR/MAXMIND_KEY`
 TAR="$CACHE_DIR/isp.tar.gz"
 DB="$CACHE_DIR/GeoIP2-ISP.mmdb"
 
+ls $CACHE_DIR
+
+exit 1
+
 if [ ! -f $TAR ]; then
 	echo "-----> Database does not exist in cache, downloading."
 
