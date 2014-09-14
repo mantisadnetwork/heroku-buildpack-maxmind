@@ -30,7 +30,7 @@ if [ -f $DB ]; then
 	if [ -f $LAST ]; then
 		touch -d '-1 week' limit
 
-		if [ limit -nt $LAST ];
+		if [ limit -nt $LAST ]; then
 			echo "-----> Database is older than a week, clearing cache."
 
 			rm $DB
