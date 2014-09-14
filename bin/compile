@@ -35,6 +35,8 @@ if [ ! -f $DB ]; then
 	echo "-----> Extracting $TAR"
 
 	tar -zxvf $TAR -C $CACHE_DIR --no-anchored --strip-components=1 'GeoIP2-ISP.mmdb'
+else
+	echo "-----> Database already exists in cache."
 fi
 
 SAVE="$BUILD_DIR/$SAVE"
@@ -42,4 +44,7 @@ SAVE="$BUILD_DIR/$SAVE"
 echo "-----> Copying $DB to $SAVE"
 
 cp $DB $SAVE
-rm $TAR
+
+if [ -f $TAR ]; then
+	rm $TAR
+fi
