@@ -34,7 +34,7 @@ fi
 if [ ! -f $DB ]; then
 	echo "-----> Extracting $TAR"
 
-	tar -zxvf $TAR --wildcards --no-anchored --strip=1 '*GeoIP2-ISP.mmdb'
+	tar -zxvf $TAR --wildcards --no-anchored --strip-components=1 --strip=1 '*GeoIP2-ISP.mmdb'
 
 	ls $CACHE_DIR
 fi
