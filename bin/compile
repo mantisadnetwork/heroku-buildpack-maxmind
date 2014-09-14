@@ -26,7 +26,16 @@ TAR="$CACHE_DIR/isp.tar.gz"
 DB="$CACHE_DIR/GeoIP2-ISP.mmdb"
 LAST="$CACHE_DIR/lastdb"
 
-ls $CACHE_DIR
+touch -d '-1 week' limit
+ls -la $LAST
+ls -la limit
+
+if [ limit -nt $LAST ]; then
+	echo "Should work!"
+
+	rm $DB
+fi
+
 exit 1
 
 if [ -f $DB ]; then
