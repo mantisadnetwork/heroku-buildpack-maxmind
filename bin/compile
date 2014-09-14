@@ -16,6 +16,10 @@ if [ ! -f "$ENV_DIR/MAXMIND_PATH" ]
 	exit 1
 fi
 
+
+MAXMIND_PATH = `cat $ENV_DIR/MAXMIND_PATH`
+MAXMIND_KEY = `cat $ENV_DIR/MAXMIND_KEY`
+
 DB = "$CACHE_DIR/GeoIP2-ISP.mmdb"
 
 if [ ! -f $DB ]
@@ -23,7 +27,7 @@ if [ ! -f $DB ]
 
 	TAR = "$CACHE_DIR/isp.tar.gz"
 
-	curl -o $TAR -L "https://download.maxmind.com/app/geoip_download?edition_id=GeoIP2-ISP&suffix=tar.gz&license_key=$MAXMIND"
+	curl -o $TAR -L "https://download.maxmind.com/app/geoip_download?edition_id=GeoIP2-ISP&suffix=tar.gz&license_key=$MAXMIND_KEY"
 
 	echo "-----> Extracting $TAR"
 
@@ -31,7 +35,6 @@ if [ ! -f $DB ]
 	rm $TAR
 fi
 
-MAXMIND_PATH = `cat $ENV_DIR/MAXMIND_PATH`
 SAVE = "$BUILD_DIR/$SAVE"
 
 echo "-----> Copying $DB to $SAVE"
