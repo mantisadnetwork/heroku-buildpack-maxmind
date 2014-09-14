@@ -25,17 +25,13 @@ MAXMIND_KEY=`cat $ENV_DIR/MAXMIND_KEY`
 TAR="$CACHE_DIR/isp.tar.gz"
 DB="$CACHE_DIR/GeoIP2-ISP.mmdb"
 
-ls $CACHE_DIR
-
-exit 1
-
-if [ ! -f $TAR ]; then
-	echo "-----> Database does not exist in cache, downloading."
-
-	curl -o $TAR -L "https://download.maxmind.com/app/geoip_download?edition_id=GeoIP2-ISP&suffix=tar.gz&license_key=$MAXMIND_KEY"
-fi
-
 if [ ! -f $DB ]; then
+	if [ ! -f $TAR ]; then
+		echo "-----> Database does not exist in cache, downloading."
+
+		curl -o $TAR -L "https://download.maxmind.com/app/geoip_download?edition_id=GeoIP2-ISP&suffix=tar.gz&license_key=$MAXMIND_KEY"
+	fi
+
 	echo "-----> Extracting $TAR"
 
 	tar -zxvf $TAR -C $CACHE_DIR --no-anchored --strip-components=1 'GeoIP2-ISP.mmdb'
