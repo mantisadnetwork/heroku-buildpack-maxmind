@@ -8,6 +8,9 @@ The database file(s) is saved to a Heroku cache directory that is persisted acro
 * MAXMIND_KEY = The license key they provided which allows you to download files.
 * MAXMIND_PATH = The path relative to the build directory where you want the file stored, ie: "GeoIP2-ISP.mmdb" or "path/to/folder/GeoIP2-ISP.mmdb"
 
+## How to Use
+Follow the instructions at https://github.com/ddollar/heroku-buildpack-multi for using multiple build packs. Simply add this repository to this list and wallah!
+
 ## TODO
 * Expand buildback to support mulltiple database files and locations
 * Find a way to query MaxMind if new data is available vs. using file time
