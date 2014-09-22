@@ -22,6 +22,8 @@ fi
 MAXMIND_PATH=`cat $ENV_DIR/MAXMIND_PATH`
 MAXMIND_KEY=`cat $ENV_DIR/MAXMIND_KEY`
 
+mkdir -p $CACHE_DIR
+
 TAR="$CACHE_DIR/isp.tar.gz"
 DB="$CACHE_DIR/GeoIP2-ISP.mmdb"
 LAST="$CACHE_DIR/lastdb"
