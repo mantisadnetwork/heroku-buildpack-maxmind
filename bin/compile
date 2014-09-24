@@ -12,60 +12,64 @@ if [ ! -f "$ENV_DIR/MAXMIND_KEY" ]; then
 	exit 1
 fi
 
-if [ ! -f "$ENV_DIR/MAXMIND_PATH" ]; then
-	echo "-----> You must define the environment variable MAXMIND_PATH with the path relative to the build directory where you would like to store the file."
-
-	exit 1
-fi
-
-
-MAXMIND_PATH=`cat $ENV_DIR/MAXMIND_PATH`
 MAXMIND_KEY=`cat $ENV_DIR/MAXMIND_KEY`
+MAXMIND_EDITIONS=`cat $ENV_DIR/MAXMIND_EDITIONS`
 
 mkdir -p $CACHE_DIR
 
-TAR="$CACHE_DIR/isp.tar.gz"
-DB="$CACHE_DIR/GeoIP2-ISP.mmdb"
-LAST="$CACHE_DIR/lastdb"
+download(){
+	EDITION=$1
 
-if [ -f $DB ]; then
-	if [ -f $LAST ]; then
-		touch -d '-1 week' limit
+	TAR="$CACHE_DIR/$EDITION.tar.gz"
+	DB="$CACHE_DIR/$EDITION.mmdb"
+	LAST="$CACHE_DIR/$EDITION.last"
 
-		if [ limit -nt $LAST ]; then
-			echo "-----> Database is older than a week, clearing cache."
+	if [ -f $DB ]; then
+		if [ -f $LAST ]; then
+			touch -d '-1 week' limit
+
+			if [ limit -nt $LAST ]; then
+				echo "-----> $EDITION: Database is older than a week, clearing cache."
+
+				rm $DB
+			fi
+		else
+			echo "-----> $EDITION: Unable to determine last download time, clearing cache."
 
 			rm $DB
 		fi
+	fi
+
+	if [ ! -f $DB ]; then
+		if [ ! -f $TAR ]; then
+			echo "-----> $EDITION: Database does not exist in cache, downloading."
+
+			curl -o $TAR -L "https://download.maxmind.com/app/geoip_download?edition_id=${EDITION}&suffix=tar.gz&license_key=$MAXMIND_KEY"
+		fi
+
+		echo "-----> $EDITION: Extracting $TAR"
+
+		tar -zxvf $TAR -C $CACHE_DIR --no-anchored --strip-components=1 "$EDITION.mmdb"
+
+		touch $LAST
 	else
-		echo "-----> Unable to determine last download time, clearing cache."
-
-		rm $DB
-	fi
-fi
-
-if [ ! -f $DB ]; then
-	if [ ! -f $TAR ]; then
-		echo "-----> Database does not exist in cache, downloading."
-
-		curl -o $TAR -L "https://download.maxmind.com/app/geoip_download?edition_id=GeoIP2-ISP&suffix=tar.gz&license_key=$MAXMIND_KEY"
+		echo "-----> $EDITION: Database already exists in cache."
 	fi
 
-	echo "-----> Extracting $TAR"
+	OUTPUT="$BUILD_DIR/$SAVE"
 
-	tar -zxvf $TAR -C $CACHE_DIR --no-anchored --strip-components=1 'GeoIP2-ISP.mmdb'
+	echo "-----> $EDITION: Copying $DB to $OUTPUT"
 
-	touch $LAST
-else
-	echo "-----> Database already exists in cache."
-fi
+	cp $DB $OUTPUT
 
-SAVE="$BUILD_DIR/$SAVE"
+	if [ -f $TAR ]; then
+		rm $TAR
+	fi
+}
 
-echo "-----> Copying $DB to $SAVE"
+IFS=', ' read -a editions <<< "$MAXMIND_EDITIONS"
 
-cp $DB $SAVE
-
-if [ -f $TAR ]; then
-	rm $TAR
-fi
+for edition in "${editions[@]}"
+do
+    download "$edition"
+done
