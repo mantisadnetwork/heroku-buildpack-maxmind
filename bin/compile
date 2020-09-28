@@ -56,7 +56,7 @@ download(){
 		echo "-----> $EDITION: Database already exists in cache."
 	fi
 
-	OUTPUT="$BUILD_DIR/$SAVE"
+	OUTPUT="$BUILD_DIR/engines/backend/$SAVE"
 
 	echo "-----> $EDITION: Copying $DB to $OUTPUT"
 
