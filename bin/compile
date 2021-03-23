@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 
 set -e # bail if any command fails
+#set -x # debug
 
 BUILD_DIR=$1
 CACHE_DIR=$2
@@ -20,51 +21,52 @@ mkdir -p $CACHE_DIR
 download(){
 	EDITION=$1
 
+  URL="https://download.maxmind.com/app/geoip_download?edition_id=${EDITION}&suffix=tar.gz&license_key=$MAXMIND_KEY"
 	TAR="$CACHE_DIR/$EDITION.tar.gz"
+	TAR_NEW="$CACHE_DIR/$EDITION-new.tar.gz"
 	DB="$CACHE_DIR/$EDITION.mmdb"
-	LAST="$CACHE_DIR/$EDITION.last"
-
-	if [ -f $DB ]; then
-		if [ -f $LAST ]; then
-			touch -d '-1 week' limit
-
-			if [ limit -nt $LAST ]; then
-				echo "-----> $EDITION: Database is older than a week, clearing cache."
-
-				rm $DB
-			fi
-		else
-			echo "-----> $EDITION: Unable to determine last download time, clearing cache."
-
-			rm $DB
-		fi
-	fi
-
-	if [ ! -f $DB ]; then
-		if [ ! -f $TAR ]; then
-			echo "-----> $EDITION: Database does not exist in cache, downloading."
-
-			curl -o $TAR -L "https://download.maxmind.com/app/geoip_download?edition_id=${EDITION}&suffix=tar.gz&license_key=$MAXMIND_KEY"
-		fi
-
-		echo "-----> $EDITION: Extracting $TAR"
-
-		tar -zxvf $TAR -C $CACHE_DIR --no-anchored --strip-components=1 "$EDITION.mmdb"
-
-		touch $LAST
-	else
-		echo "-----> $EDITION: Database already exists in cache."
-	fi
-
-	OUTPUT="$BUILD_DIR/$SAVE"
-
-	echo "-----> $EDITION: Copying $DB to $OUTPUT"
-
-	cp $DB $OUTPUT
 
 	if [ -f $TAR ]; then
-		rm $TAR
-	fi
+    modified=$(curl --silent --head $URL | \
+                 awk '/^[Ll]ast-[Mm]odified/{print $0}' | \
+                 sed 's/^[Ll]ast-[Mm]odified: //')
+    echo "-----> $EDITION: modified $modified"
+    remote_ctime=$(date --date="$modified" +%s)
+    local_ctime=$(stat -c %y "$TAR")
+    local_ctime=$(date --date="$local_ctime" +%s)
+    if [ $local_ctime -lt $remote_ctime ]; then
+      newer_version=true
+    fi
+  fi
+
+  if [ ! -f $TAR ] || [ $newer_version ]; then
+    if [ $newer_version ]; then
+      echo "-----> $EDITION: Found newer version of the TAR file on the server, downloading."
+    else
+      echo "-----> $EDITION: Database does not exist in cache, downloading."
+    fi
+
+    curl -o $TAR_NEW -L $URL
+  else
+    echo "-----> $EDITION: Database already exists in cache and it's up to date."
+    TAR_NEW=$TAR
+  fi
+
+  echo "-----> $EDITION: Extracting $TAR_NEW"
+  tar -zxvf $TAR_NEW -C $CACHE_DIR --no-anchored --strip-components=1 "$EDITION.mmdb"
+  if [ $? -ne 0 ]; then
+    if [ $newer_version ]; then
+      echo "-----> WARNING $EDITION: Could not download TAR file! Using old cached version."
+    else
+      echo "-----> ERROR $EDITION: Could not download TAR file! Cannot continue!!!"
+      exit 1
+    fi
+  fi
+
+	OUTPUT="$BUILD_DIR/$SAVE"
+	echo "-----> $EDITION: Moving $DB to $OUTPUT"
+	mv $DB $OUTPUT
+	mv $TAR_NEW $TAR || true
 }
 
 IFS=', ' read -a editions <<< "$MAXMIND_EDITIONS"
