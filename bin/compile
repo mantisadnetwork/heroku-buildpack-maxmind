@@ -14,6 +14,7 @@ fi
 
 MAXMIND_KEY=`cat $ENV_DIR/MAXMIND_KEY`
 MAXMIND_EDITIONS=`cat $ENV_DIR/MAXMIND_EDITIONS`
+MAXMIND_DB_DIR=`cat $ENV_DIR/MAXMIND_DB_DIR`
 
 mkdir -p $CACHE_DIR
 
@@ -56,7 +57,7 @@ download(){
 		echo "-----> $EDITION: Database already exists in cache."
 	fi
 
-	OUTPUT="$BUILD_DIR/$SAVE"
+	OUTPUT="$BUILD_DIR/$MAXMIND_DB_DIR"
 
 	echo "-----> $EDITION: Copying $DB to $OUTPUT"
 
